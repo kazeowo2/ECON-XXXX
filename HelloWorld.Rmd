@@ -1,0 +1,23 @@
+---
+title: "HelloWorld.rmd"
+output:
+  pdf_document: default
+  html_document: default
+date: '2023-03-17'
+---
+
+
+
+```{r}
+print("HelloWorld")
+```
+
+
+
+```{r}
+add_two_number <- function(intA,intB ) {
+    return(intA + intB)
+}
+add_two_number(2,3)
+```
+
