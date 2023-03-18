@@ -136,8 +136,8 @@ conditionmean_bydRHD
 
 # 4.2.7
 ```{r}
-# E(w1,I=1)(11.578201) & E(w0,I=0)(10.146672) is observed in real world,
-# E(w1,I=0)(8.412406) & E(w0,I=1)(9.355612) is not observed in real world,
+# E(w1,I=1) & E(w0,I=0) is observed in real world,
+# E(w1,I=0) & E(w0,I=1) is not observed in real world,
 ```
 
 
