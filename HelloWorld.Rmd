@@ -1,23 +1,156 @@
 ---
 title: "HelloWorld.rmd"
 output:
-  pdf_document: default
+  pdf_document:
+    latex_engine: xelatex
   html_document: default
 date: '2023-03-17'
 ---
 
+# the document is by R11323019 .
 
 
+# 1.1
 ```{r}
 print("HelloWorld")
 ```
 
 
-
+# 1.3
 ```{r}
 add_two_number <- function(intA,intB ) {
     return(intA + intB)
 }
 add_two_number(2,3)
 ```
+
+
+# 4.2.1: set value
+
+```{r}
+mu0 <- 10
+mu1 <- 9
+var0 <- 1
+var1 <- 2
+var01 <- 0.6
+c <- 1
+```
+
+# 4.2.2: create eplison and store in data.table
+
+```{r}
+library('dplyr')
+library('data.table')
+
+simulation <- data.table(
+  eplison0 = rnorm(10^7, 0, var0),
+  eplison1 = rnorm(10^7, 0, var1)
+)
+
+```
+
+```{r}
+head(simulation)
+```
+
+
+# 4.2.3: create W0 and W1
+
+```{r}
+# W0 = u0 + eplison0
+# w1 = u1 + eplison1
+
+simulation[, w0:= mu0+eplison0]
+simulation[, w1:= mu1+eplison1]
+```
+
+```{r}
+head(simulation)
+```
+
+
+
+# 4.2.4: create I
+```{r}
+# Migrate(I=1) if w1>(w0+c)
+
+simulation[w1-w0-c>0, I:= 1]
+simulation[w1-w0-c<=0, I:= 0]
+```
+
+```{r}
+head(simulation)
+```
+
+
+# 4.2.5: create conditional mean by data
+
+```{r}
+conditionmean_bydata<- simulation[, 
+                                  .(condi_w0_bydata = mean(w0), #condi_w0_bydata is E(w0|I) cal by data.
+                                    condi_w1_bydata = mean(w1), #condi_w1_bydata is E(w1|I) cal by data.
+                                    Q0_bydata = mean(eplison0), #Q0_bydata is E(eplison0|I) cal by data
+                                    Q1_bydata = mean(eplison1)),#Q1_bydata is E(eplison1|I) cal by data 
+                                  by = I]
+```
+
+
+```{r}
+conditionmean_bydata
+# The first row(I=1) is what we want to know.
+```
+
+# 4.2.6: create conditional mean by RHS
+```{r}
+# get z by data
+simulation[, v := eplison1-eplison0]
+val_v <- simulation[, var(v)]
+z <- (mu0-mu1+c)/val_v
+
+# where we know E(w1|I) = mu1 + var1*E((eplison1/var1)|(v/var_v > z))
+# and E(w0|I) = mu0 + var0*E((eplison0/var0)|(v/var_v > z))
+simulation[v/var(v) > z, condi:= 1]
+simulation[v/var(v) <= z, condi:= 0]
+```
+
+
+```{r}
+E1 <- simulation[,mu1+ var1*mean(eplison1/var1), by = condi]
+
+conditionmean_bydRHD<- simulation[, 
+# condi_w0_byRHS is E(w0|I) cal by E(w0|I) = mu0 + var0*E((eplison0/var0)|(v/var_v > z))
+                          .(condi_w0_byRHS = mu0+ var0*mean(eplison0/var0), 
+# condi_w1_byRHS is E(w1|I) cal by E(w1|I) = mu1 + var1*E((eplison1/var1)|(v/var_v > z))
+                            condi_w1_byRHS = mu1+ var1*mean(eplison1/var1)), 
+                            by = condi]
+
+# Q0_byRHS is E(eplison0|I) cal by calculation(E(w0|I)-mu0)
+conditionmean_bydRHD[,Q0_byRHS := (condi_w0_byRHS - mu0)] 
+# Q1_byRHS is E(eplison1|I) cal by calculation(E(w1|I)-mu1)
+conditionmean_bydRHD[,Q1_byRHS := (condi_w1_byRHS - mu1)] 
+```
+
+```{r}
+conditionmean_bydRHD
+```
+
+# 4.2.7
+```{r}
+# E(w1,I=1)(11.578201) & E(w0,I=0)(10.146672) is observed in real world,
+# E(w1,I=0)(8.412406) & E(w0,I=1)(9.355612) is not observed in real world,
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
