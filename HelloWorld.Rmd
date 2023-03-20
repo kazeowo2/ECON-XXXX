@@ -29,39 +29,37 @@ add_two_number(2,3)
 # import data
 library(haven)
 library('dplyr')
-PSFD2016 <- read_sav("C:/Users/user/Downloads/C00320_3/RCI2016_v201811_spss.sav")
-
-head(PSFD2016)
+PSFD2020 <- read_sav("C:/Users/user/Downloads/C00377_1/psfd_rr2020_v202208_spss.sav")
+head(PSFD2020)
 
 ```
 
 ```{r}
-#check if 訪問年分(x02) == 2016
-PSFD2016[PSFD2016$x02 != 2016,]
+#check if 訪問年分(x02) == 2020
+PSFD2020[PSFD2020$x02 != 2020,]
 ```
 
 ```{r}
 #calculate age 
-##a02a01:請問你是民國幾年出生
-##訪問年分=2016 = 民國105年)
+##a02a:請問你是民國幾年出生
+##訪問年分=2020 = 民國109年)
 
-PSFD2016$age <- 105 - PSFD2016$a02a01 + 1
+PSFD2020$age <- 109 - PSFD2020$a02a + 1
 
-#c02z01:請問你目前有工作嗎? 1:有 2、3:家庭主婦、4:無
+#w03:請問你目前有工作嗎? 1:有 2、3:家庭主婦、4:無
 ##only consider work at market(1).
-# %>% mutate(work = if_else(c02z01 == 1, 1, 0))
-PSFD2016$work <- as.integer(PSFD2016$c02z01 == 1)
+PSFD2020$work <- as.integer(PSFD2020$w03 == 1)
 
 ```
 
 ```{r}
-work_RSFD2016 <- PSFD2016 %>% group_by(age) %>% summarise(work_rate = mean(work))
+work_RSFD2020 <- PSFD2020 %>% group_by(age) %>% summarise(work_rate = mean(work))
 ```
 
 ```{r}
 library("ggplot2")
 
-work_age <- ggplot(work_RSFD2016) +
+work_age <- ggplot(work_RSFD2020) +
 #geom_bar(mapping = aes(y=work_rate, x=age), stat = "identity",width = 0.5)+
 geom_line(mapping = aes(y=work_rate, x=age)) + 
 labs(title="rate of working against age")+
