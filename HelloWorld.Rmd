@@ -24,6 +24,63 @@ add_two_number <- function(intA,intB ) {
 add_two_number(2,3)
 ```
 
+# 3.4
+```{r}
+# import data
+library(haven)
+library('dplyr')
+PSFD2016 <- read_sav("C:/Users/user/Downloads/C00320_3/RCI2016_v201811_spss.sav")
+
+head(PSFD2016)
+
+```
+
+```{r}
+#check if 訪問年分(x02) == 2016
+PSFD2016[PSFD2016$x02 != 2016,]
+```
+
+```{r}
+#calculate age 
+##a02a01:請問你是民國幾年出生
+##訪問年分=2016 = 民國105年)
+
+PSFD2016$age <- 105 - PSFD2016$a02a01 + 1
+
+#c02z01:請問你目前有工作嗎? 1:有 2、3:家庭主婦、4:無
+##only consider work at market(1).
+# %>% mutate(work = if_else(c02z01 == 1, 1, 0))
+PSFD2016$work <- as.integer(PSFD2016$c02z01 == 1)
+
+```
+
+```{r}
+work_RSFD2016 <- PSFD2016 %>% group_by(age) %>% summarise(work_rate = mean(work))
+```
+
+```{r}
+library("ggplot2")
+
+work_age <- ggplot(work_RSFD2016) +
+#geom_bar(mapping = aes(y=work_rate, x=age), stat = "identity",width = 0.5)+
+geom_line(mapping = aes(y=work_rate, x=age)) + 
+labs(title="rate of working against age")+
+coord_flip()+
+ylab('work_rate')+  
+xlab('age ')
+
+
+plot(work_age)
+
+
+```
+
+```{r}
+rm(list = ls())
+```
+
+
+
 
 # 4.2.1: set value
 
