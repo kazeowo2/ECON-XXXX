@@ -1,0 +1,56 @@
+---
+title: "hw3"
+output:
+  pdf_document: default
+  html_document: default
+date: '2023-04-23'
+---
+# the document is from R11323019.
+
+
+# 5.2 simulate mutiple treatment
+```{r}
+library ("data.table")
+library ('fixest')
+```
+
+```{r}
+set.seed(2333)
+
+data <- data.table(state = rep (1:10,each = 4000),
+                  id = rep (1:1000,each = 40),
+                  year = rep (1980:2019,1000),
+                  indv_FE = rep( runif (1000, min =0, max =5),each = 40), 
+                  time_FE = rep (1:40, 1000), 
+                  group = rep (1:4,each = 10000),
+                  treat_year = rep(c (1999,2004,2009,2014),each = 10000),
+                  epsilon = rnorm (40000,0,(0.5)^2), 
+                  hetero=c( rnorm (10000,10,(0.2)^2),rnorm (10000,8,(0.2)^2),
+                            rnorm (10000,6,(0.2)^2),rnorm (10000,4,(0.2)^2)))
+
+
+```
+
+
+```{r}
+data [ ,treat:= ifelse (year >= treat_year ,1,0)]
+data [ ,time_til := year - treat_year]
+
+data [ ,treated:=1]
+data [ , y := indv_FE + time_FE+treat * hetero *(year - treat_year+1) + epsilon ] 
+
+```
+
+```{r}
+TWFE <-feols(y~i ( time_til ,treated ,ref=-1)|id+year ,data ,vcov = ~state) 
+summary(TWFE)
+```
+
+
+# 5.3
+
+```{r}
+fixest <-feols(y~ sunab(treat_year ,year)|id+year ,data , subset = ~year <2014,vcov= ~state) 
+summary(fixest)
+```
+
